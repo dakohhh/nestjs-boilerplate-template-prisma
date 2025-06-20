@@ -4,7 +4,7 @@ services:
     restart: unless-stopped # restart the container unless it was explicitly stopped (Development)
     shm_size: 128mb # Shared memory size
     volumes:
-      - postgres_credicrow:/var/lib/postgresql/data
+      - postgres_boilerplate:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
@@ -30,4 +30,4 @@ services:
       - "2525:25"
 
 volumes:
-  postgres_credicrow:
+  postgres_boilerplate:
