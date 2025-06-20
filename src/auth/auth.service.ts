@@ -7,7 +7,7 @@ import { MailService } from "src/mail/mail.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { PasswordResetDto, RequestPasswordResetDto } from "./dto/password-reset.dto";
 import { EmailVerificationDto, RequestEmailVerificationDto } from "./dto/email-verification.dto";
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, UnauthorizedException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
 import { TokenService } from "src/token/token.service";
 
 @Injectable()
@@ -20,10 +20,13 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<Partial<User>> {
-    const user = await this.prismaService.user.findUnique({ where: { email }, select: { id: true, password: true, firstName: true, lastName: true } });
-    if (!user) throw new NotFoundException("User not found");
+    const user = await this.prismaService.user.findUnique({ where: { email }, select: { id: true, password: true, firstName: true, lastName: true, provider: true } });
+    if (!user) throw new BadRequestException("Incorrect email or password");
+    if (user.provider !== Provider.DEFAULT) {
+      throw new UnauthorizedException(`This account was created with ${user.provider}. Please log in with ${user.provider}.`);
+    }
     const isPasswordMatching = await bcryptjs.compare(password, user.password);
-    if (!isPasswordMatching) throw new HttpException("Invalid credentials", HttpStatus.UNAUTHORIZED);
+    if (!isPasswordMatching) throw new UnauthorizedException("Incorrect email or password");
     const { password: _, ...cleanedUser } = user;
     return cleanedUser;
   }
@@ -54,7 +57,16 @@ export class AuthService {
 
   async oauthFacebookLogin(user: User) {
     //  Find the user
-    const existingUser = await this.prismaService.user.findFirst({ where: { provider: Provider.FACEBOOK, providerId: user.providerId } });
+    const existingUser = await this.prismaService.user.findFirst({
+      where: { email: user.email },
+    });
+
+    if (existingUser) {
+      if (existingUser.provider !== Provider.FACEBOOK) {
+        throw new UnauthorizedException(`This account was created with ${existingUser.provider}. Please log in using ${existingUser.provider}.`);
+      }
+      return this.login(existingUser);
+    }
 
     if (existingUser) {
       return this.login(existingUser);
