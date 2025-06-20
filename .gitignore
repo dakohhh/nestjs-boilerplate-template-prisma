@@ -57,7 +57,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Apple private key
 # *.p8
-docker-compose-dev.yaml
 commands.md
 .vscode/
 cloudfront_private_key.pem
