@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      {
+        "include": "auth/**/*.p8",
+        "outDir": "dist/src",
+        "watchAssets": true
+      },
+      {
+        "include": "mail/templates/**/*.html",
+        "outDir": "dist/src",
+        "watchAssets": true
+      },
+      {
+        "include": "./generated/**/*",
+        "outDir": "./dist/generated",
+        "watchAssets": true
+      }
+    ]
+  }
+}
