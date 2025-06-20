@@ -63,4 +63,4 @@ commands.md
 cloudfront_private_key.pem
 cloudfront_public_key.pem
 /generated/prisma
-Makefile
+tmp

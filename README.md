@@ -46,14 +46,8 @@ yarn test:cov
 https://api-dev.eatandvibe.codeforgex.dev/docs
 ```
 
-## Stay in touch
-
--   Author - [Sherifdeen Adebayo](https://github.com/herdeybayor)
--   Website - [EatNVibe](https://eatnvibe.com)
--   Twitter - [@S_herdeybayor](https://twitter.com/S_herdeybayor)
 
 ## Stay in touch
 
--   Author - [Marvellous Solomon](https://github.com/marvel6)
--   Website - [EatNVibe](https://eatnvibe.com)
--   Twitter - [@marvel_Techie](https://x.com/marvel_techie)
+-   Author - [@dakohhh](https://github.com/dakohhhh)
+-   LinkedIn - [Wisdom Dakoh](https://www.linkedin.com/in/wisdomdakoh/)
