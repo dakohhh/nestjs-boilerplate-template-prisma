@@ -1,6 +1,7 @@
 import { User } from "@prisma/client";
 import { LoginDto } from "./dto/login.dto";
 import { AuthService } from "./auth.service";
+import { ConfigService } from "@nestjs/config";
 import { RegisterDto } from "./dto/register.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { LocalAuthGuard } from "./guards/local-auth.guard";
@@ -12,12 +13,16 @@ import { ApiHttpErrorResponses, ApiHttpResponse } from "src/common/decorators/cu
 import { FacebookOauthGuard } from "./guards/facebook-oauth.guard";
 import { EmailVerificationDto, RequestEmailVerificationDto } from "./dto/email-verification.dto";
 import { PasswordResetDto, RequestPasswordResetDto, RequestPasswordResetResponseDto } from "./dto/password-reset.dto";
-import { Body, Request, Controller, Post, UseGuards, HttpStatus, HttpCode, Get } from "@nestjs/common";
+import { Body, Request, Controller, Post, UseGuards, HttpStatus, HttpCode, Get, Res } from "@nestjs/common";
+import { Response } from "express";
 
 @ApiTags("Authentication")
 @Controller({ path: "auth", version: "1" })
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService
+  ) {}
 
   @ApiOperation({ summary: "Register" })
   @ApiHttpErrorResponses()
@@ -132,8 +137,23 @@ export class AuthController {
   @ApiHttpResponse({ status: 200, type: AuthenticationResponseDto, description: "Logs in a user using Facebook OAuth" })
   @UseGuards(FacebookOauthGuard)
   @Get("facebook/callback")
-  async facebookAuthCallback(@Request() req: Request & { user: User }) {
+  async facebookAuthCallback(@Request() req: Request & { user: User }, @Res() res: Response) {
     const result = await this.authService.oauthFacebookLogin(req.user);
-    return new HttpResponse("User session", result, HttpStatus.OK);
+
+    res.cookie("accessToken", result.token.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>("DEPLOYMENT_ENV") === "production",
+      sameSite: this.configService.get<string>("DEPLOYMENT_ENV") === "production" ? "strict" : "lax",
+      maxAge: 1000 * 60 * 15,
+    });
+
+    res.cookie("refreshToken", result.token.refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get<string>("DEPLOYMENT_ENV") === "production",
+      sameSite: this.configService.get<string>("DEPLOYMENT_ENV") === "production" ? "strict" : "lax",
+      maxAge: 1000 * 60 * 15,
+    });
+
+    return res.redirect(`${this.configService.get("CONFIGS.URLS.FRONTEND_BASE_URL")}/dashboard`);
   }
 }
